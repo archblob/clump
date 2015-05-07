@@ -11,7 +11,8 @@ import Data.ByteString.Char8
 import Data.ByteString.Builder
 import Data.ByteString.Lazy (toStrict)
 import Data.Monoid
-import Prelude hiding (take, drop, length, lines, words, unwords, readFile, writeFile)
+import Prelude hiding ( last, init, null, take, drop, length, lines, words
+                      , unwords, readFile, writeFile)
 import System.Environment (getArgs)
 
 symbolToNumber :: Char -> Int
@@ -32,6 +33,7 @@ numberToSymbol c = case c of
 
 pTon :: ByteString -> Int
 pTon bs = foldl' (\acm c -> 4 * acm + symbolToNumber c) 0 bs
+{-# INLINABLE pTon #-}
 
 nTop :: Int -> Int -> ByteString
 nTop i' k' = toStrict $ toLazyByteString $ go i' k'
@@ -40,8 +42,9 @@ nTop i' k' = toStrict $ toLazyByteString $ go i' k'
           where (prefixIndex,r) = quotRem i 4
 
 kmers :: Int -> ByteString -> [Int]
-kmers k xs = [pTon (take k (drop x xs)) | x <- [0..(length xs - k)]]
-
+kmers k bs
+  | length bs < k = []
+  | otherwise     = pTon (take k bs) : kmers k (drop k bs)
 
 defaultMainWith :: (ByteString -> Int -> Int -> Int -> [ByteString]) -> IO ()
 defaultMainWith fcp = do
@@ -52,9 +55,10 @@ defaultMainWith fcp = do
   writeFile outputFilename $ unwords $ fcp inputString k l t
 
 genWindowEnds :: ByteString -> Int -> Int -> [(Int,Int)]
-genWindowEnds s l k = [(pTon $ fp s k i, pTon $ lp s k l i) | i <- [0..(length s - l - 1)]]
-  where fp s' k' i' = take k' $ drop i' s'
-        lp s' k' l' i' = take k' $ drop (i' + 1 + l' - k') s'
+genWindowEnds bs l k
+  | length bs < l = []
+  | otherwise     = (pTon (take k bs), pTon (drop (l - k) (take l bs)))
+                      : genWindowEnds (drop l bs) l k
 
 {-
 fcp' :: ByteString -> Int -> Int -> Int -> [ByteString]

@@ -10,6 +10,26 @@ build-type:          Simple
 -- extra-source-files:  
 cabal-version:       >=1.10
 
+library
+  exposed-modules:  Common
+  ghc-options:      -O2 -Wall -fwarn-name-shadowing -fprof-auto "-with-rtsopts= -p -s -h -i0.1"
+  build-depends:    base       >=4.8 && <4.9,
+                    containers >=0.5 && <0.6,
+                    vector, bytestring, deepseq
+  other-extensions: BangPatterns
+  hs-source-dirs:   src
+  default-language: Haskell2010
+
+benchmark common
+  type:             exitcode-stdio-1.0
+  main-is:          CommonBench.hs
+  hs-source-dirs:   benchmarks
+  build-depends:    base       >=4.8 && <4.9,
+                    containers >=0.5 && <0.6,
+                    clump,
+                    criterion,
+                    bytestring
+  default-language: Haskell2010
 
 executable clump_mv
   main-is:          ClumpMV.hs
