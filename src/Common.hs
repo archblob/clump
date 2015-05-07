@@ -12,7 +12,7 @@ import Data.ByteString.Builder
 import Data.ByteString.Lazy (toStrict)
 import Data.Monoid
 import Prelude hiding ( last, init, null, take, drop, length, lines, words
-                      , unwords, readFile, writeFile)
+                      , unwords, readFile, writeFile, tail)
 import System.Environment (getArgs)
 
 symbolToNumber :: Char -> Int
@@ -58,8 +58,7 @@ genWindowEnds :: ByteString -> Int -> Int -> [(Int,Int)]
 genWindowEnds bs l k
   | length bs < l = []
   | otherwise     = (pTon (take k bs), pTon (drop (l - k) (take l bs)))
-                      : genWindowEnds (drop l bs) l k
-
+                      : genWindowEnds (tail bs) l k
 {-
 fcp' :: ByteString -> Int -> Int -> Int -> [ByteString]
 fcp' s k l t
